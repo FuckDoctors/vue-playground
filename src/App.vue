@@ -125,7 +125,9 @@ watchEffect(() => history.replaceState({}, '', `#${store.serialize()}`))
     />
   </div>
   <template v-else>
-    <div class="loading">Loading...</div>
+    <div class="loading-wrapper">
+      <div class="loading">Loading...</div>
+    </div>
   </template>
 </template>
 
@@ -156,7 +158,19 @@ button {
   background-color: transparent;
 }
 
-.loading {
+.loading-wrapper {
+  position: relative;
+  width: 100vw;
   height: 100vh;
+}
+.loading-wrapper .loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2em;
+  font-weight: bold;
+  color: #444;
+  /* opacity: 0.7; */
 }
 </style>
