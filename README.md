@@ -1,9 +1,3 @@
-<p align="center">
-  <img width="300px" src="https://user-images.githubusercontent.com/10731096/95823103-9ce15780-0d5f-11eb-8010-1bd1b5910d4f.png">
-</p>
+# Vue SFC + Element Plus Playground
 
-# Element Plus Playground
-
-[![GitHub Pages](https://github.com/element-plus/element-plus-playground/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/element-plus/element-plus-playground/actions/workflows/gh-pages.yml)
-
-You can go to [element-plus.run](https://element-plus.run/) to have a try! 😆
+Vue 和 Element Plus 的 Playground，主要是为了配合 <https://github.com/FuckDoctors/notes2> 使用。

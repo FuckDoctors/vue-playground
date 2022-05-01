@@ -1,5 +1,5 @@
 import path from 'path'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import Unocss from 'unocss/vite'
 import { presetUno } from 'unocss'
 import vue from '@vitejs/plugin-vue'
@@ -13,9 +13,14 @@ import pkg from './package.json'
 
 const pathSrc = path.resolve(__dirname, 'src')
 
-export default defineConfig(async () => {
+export default defineConfig(async ({ mode }) => {
+  // 根据当前工作目录中的 `mode` 加载 .env 文件
+  const env = loadEnv(mode, process.cwd())
+
   const repl = await getPackageInfo('@vue/repl')
   return {
+    base: env.VITE_BASE_URL || '/',
+
     resolve: {
       alias: {
         '@': pathSrc,

@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:vercel": "vite build --mode vercel",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx --max-warnings 0",
     "lint:fix": "eslint . --ext .vue,.js,.ts,.jsx,.tsx --max-warnings 0 --fix",
