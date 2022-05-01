@@ -6,8 +6,6 @@ import '@vue/runtime-core'
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     Header: typeof import('./components/Header.vue')['default']
-    'Header copy': typeof import('./components/Header copy.vue')['default']
-    HeaderEP: typeof import('./components/Header-EP.vue')['default']
   }
 }
 

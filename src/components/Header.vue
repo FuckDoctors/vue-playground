@@ -106,7 +106,7 @@ onMounted(async () => {
         class="flex items-center lt-lg-hidden version"
         @click.stop
       >
-        <span class="active-version mr-1" @click="toggle(key)">
+        <span class="active-version mr-1 truncate" @click="toggle(key)">
           {{ v.text }}: {{ v.active }}
         </span>
         <ul class="versions" :class="{ expanded: expandedState[key] }">
