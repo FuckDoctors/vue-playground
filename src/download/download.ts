@@ -6,7 +6,9 @@ import pkg from './template/package.json?raw'
 import config from './template/vite.config.js?raw'
 import readme from './template/README.md?raw'
 
-export async function downloadProject(store: any) {
+import type { ReplStore } from '@/composables/store'
+
+export async function downloadProject(store: ReplStore) {
   if (!confirm('Download project files?')) {
     return
   }
@@ -24,7 +26,13 @@ export async function downloadProject(store: any) {
   const src = zip.folder('src')!
   src.file('main.js', main)
 
-  const files = store.getFiles()
+  // const files = store.getFiles(true) // 包含隐藏文件
+  let all = false
+  const debug = new URLSearchParams(location.search).get('debug')
+  if (debug) {
+    all = true
+  }
+  const files = store.getFiles(all)
   for (const file in files) {
     src.file(file, files[file])
   }

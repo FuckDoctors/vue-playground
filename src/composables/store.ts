@@ -27,7 +27,7 @@ const MAIN_FILE = 'PlaygroundMain.vue'
 const APP_FILE = 'App.vue'
 const ELEMENT_PLUS_FILE = 'element-plus.js'
 const IMPORT_MAP = 'import-map.json'
-export const USER_IMPORT_MAP = 'user-import.json'
+export const USER_IMPORT_MAP = 'user-imports.json'
 
 export const useStore = (initial: Initial) => {
   const versions = reactive(
@@ -137,10 +137,10 @@ export const useStore = (initial: Initial) => {
     watchEffect(() => compileFile(store, state.activeFile))
   }
 
-  function getFiles() {
+  function getFiles(download: boolean = false) {
     const exported: Record<string, string> = {}
     for (const file of Object.values(state.files)) {
-      if (file.hidden) continue
+      if (!download && file.hidden) continue
       exported[file.filename] = file.code
     }
     return exported

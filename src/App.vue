@@ -43,8 +43,8 @@ if (debug) {
     },
   }
   store.state.files[USER_IMPORT_MAP].code = JSON.stringify(map, undefined, 2)
-  const url = `${location.origin}${location.pathname}#${store.serialize()}`
-  history.replaceState({}, '', url)
+  // const url = `${location.origin}${location.pathname}#${store.serialize()}`
+  // history.replaceState({}, '', url)
 }
 
 store.init().then(() => (loading = false))
