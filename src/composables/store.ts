@@ -38,6 +38,7 @@ export const useStore = (initial: Initial) => {
   const [nightly, toggleNightly] = $(useToggle(false))
   let userOptions = $ref<UserOptions>(initial.userOptions || {})
   const hideFile = $computed(() => !IS_DEV && !userOptions.showHidden)
+  console.log(userOptions.showHidden, hideFile)
 
   const files = initFiles(initial.serializedState || '')
   const state = reactive({
