@@ -77,7 +77,7 @@ export const useStore = (initial: Initial) => {
     addFile,
     deleteFile,
     getImportMap,
-    initialShowOutput: userOptions.showOutput,
+    initialShowOutput: userOptions.showOutput || false,
     initialOutputMode: 'preview',
   })
 
