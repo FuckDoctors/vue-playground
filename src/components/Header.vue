@@ -26,13 +26,15 @@ const { store } = defineProps<{
 
 interface Version {
   text: string
+  title?: string
   published: ComputedRef<string[]>
   active: string
 }
 
 const versions = reactive<Record<VersionKey, Version>>({
   elementPlus: {
-    text: 'Element Plus',
+    text: 'Element+',
+    title: 'Element Plus',
     published: getSupportedEpVersions($$(nightly)),
     active: store.versions.elementPlus,
   },
@@ -103,7 +105,8 @@ onMounted(async () => {
        <div
         v-for="(v, key) of versions"
         :key="key"
-        class="flex items-center lt-lg-hidden version"
+        :title="v.title || v.text"
+        class="flex items-center lt-sm-hidden version"
         @click.stop
       >
         <span class="active-version mr-1 truncate" @click="toggle(key)">
@@ -198,7 +201,7 @@ h1 img {
   display: flex;
 }
 .version {
-  display: inline-block;
+  /* display: inline-block; */
   margin-right: 12px;
   position: relative;
 }
