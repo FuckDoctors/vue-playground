@@ -40,11 +40,10 @@ const store = useStore({
 if (debug) {
   const map: ImportMap = {
     imports: {
-      'debug-trigger/': 'unsupported',
     },
   }
   store.state.files[USER_IMPORT_MAP].code = JSON.stringify(map, undefined, 2)
-  // const url = `${location.origin}${location.pathname}#${store.serialize()}`
+  // const url = `${location.origin}${location.pathname}${location.search}#${store.serialize()}`
   // history.replaceState({}, '', url)
 }
 

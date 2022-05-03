@@ -165,7 +165,9 @@ export const useStore = (initial: Initial) => {
         if (filename === '_o') continue
         files[filename] = new File(filename, file as string)
       }
-      userOptions = saved._o || {}
+      // 没有使用传人的userOptions
+      // userOptions = saved._o || {}
+      userOptions = Object.assign(userOptions, saved._o || {})
     } else {
       files[APP_FILE] = new File(APP_FILE, welcomeCode)
     }
@@ -228,8 +230,11 @@ export const useStore = (initial: Initial) => {
     versions.elementPlus = version
   }
 
+  console.log('showOutput:', userOptions.showOutput)
+
   return {
     ...store,
+    showOutput: userOptions.showOutput || false,
 
     versions,
     nightly: $$(nightly),
