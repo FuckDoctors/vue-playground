@@ -4,6 +4,7 @@ import Header from '@/components/Header.vue'
 import {
   USER_IMPORT_MAP,
   type UserOptions,
+  type VersionKey,
   useStore,
 } from '@/composables/store'
 import type { BuiltInParserName } from 'prettier'
@@ -65,6 +66,14 @@ const handleKeydown = (evt: KeyboardEvent) => {
   }
 }
 
+const handleBeforeDepsChange = (key: VersionKey, version: string): void => {
+  loading = true
+}
+
+const handleDepsChanged = (key: VersionKey, version: string): void => {
+  loading = false
+}
+
 let loadedFormat = false
 const formatCode = async () => {
   let close: Fn | undefined
@@ -111,8 +120,8 @@ watchEffect(() => history.replaceState({}, '', `#${store.serialize()}`))
 </script>
 
 <template>
-  <div v-if="!loading" class="antialiased">
-    <Header :store="store" />
+  <div class="antialiased">
+    <Header :store="store" @before-deps-change="handleBeforeDepsChange" @deps-changed="handleDepsChanged" />
     <Repl
       ref="repl"
       :store="store"
@@ -124,11 +133,9 @@ watchEffect(() => history.replaceState({}, '', `#${store.serialize()}`))
       @keydown="handleKeydown"
     />
   </div>
-  <template v-else>
-    <div class="loading-wrapper">
-      <div class="loading">Loading...</div>
-    </div>
-  </template>
+  <div v-if="loading" class="loading-wrapper">
+    <div class="loading">Loading...</div>
+  </div>
 </template>
 
 <style>
@@ -159,9 +166,14 @@ button {
 }
 
 .loading-wrapper {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
+  z-index: 1100;
+  background-color: white;
+  opacity: 0.7;
 }
 .loading-wrapper .loading {
   position: absolute;
@@ -171,6 +183,5 @@ button {
   font-size: 2em;
   font-weight: bold;
   color: #444;
-  /* opacity: 0.7; */
 }
 </style>

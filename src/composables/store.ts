@@ -230,7 +230,7 @@ export const useStore = (initial: Initial) => {
     versions.elementPlus = version
   }
 
-  console.log('showOutput:', userOptions.showOutput)
+  // console.log('showOutput:', userOptions.showOutput)
 
   return {
     ...store,

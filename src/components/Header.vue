@@ -24,6 +24,12 @@ const { store } = defineProps<{
   store: ReplStore
 }>()
 
+// const emit = defineEmits(['change-deps'])
+const emit = defineEmits<{
+  (e: 'before-deps-change', key: VersionKey, version: string): void
+  (e: 'deps-changed', key: VersionKey, version: string): void
+}>()
+
 interface Version {
   text: string
   title?: string
@@ -51,10 +57,12 @@ const expandedState = reactive<Record<VersionKey, boolean>>({
 })
 
 async function setVersion(key: VersionKey, v: string) {
+  emit('before-deps-change', key, versions[key].active)
   expandedState[key] = false
   versions[key].active = `loading...`
   await store.setVersion(key, v)
   versions[key].active = v
+  emit('deps-changed', key, versions[key].active)
 }
 
 const toggleNightly = (val: boolean) => {
