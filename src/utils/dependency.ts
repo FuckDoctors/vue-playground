@@ -55,28 +55,28 @@ export const genImportMap = (
       pkg: '@vue/runtime-dom',
       version: vue,
       path: '/dist/runtime-dom.esm-browser.js',
-      source: 'jsdelivr',
+      source: 'unpkg',
     },
     '@vue/shared': {
       version: vue,
       path: '/dist/shared.esm-bundler.js',
-      source: 'jsdelivr',
+      source: 'unpkg',
     },
     'element-plus': {
       pkg: nightly ? '@element-plus/nightly' : 'element-plus',
       version: elementPlus,
       path: '/dist/index.full.min.mjs',
-      source: 'jsdelivr',
+      source: 'unpkg',
     },
     'element-plus/': {
       pkg: 'element-plus',
       version: elementPlus,
       path: '/',
-      source: 'jsdelivr',
+      source: 'unpkg',
     },
     '@element-plus/icons-vue': {
       path: '/dist/index.min.mjs',
-      source: 'jsdelivr',
+      source: 'unpkg',
     },
   }
 

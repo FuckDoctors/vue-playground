@@ -107,7 +107,7 @@ onMounted(async () => {
   <nav>
     <h1>
       <img alt="logo" src="../assets/logo.svg" />
-      <span>Vue SFC Playground</span>
+      <span>Vue Playground</span>
     </h1>
     <div class="links">
        <div
