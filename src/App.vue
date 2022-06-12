@@ -33,6 +33,19 @@ if (showOutput) {
   initialUserOptions.showOutput = true
 }
 
+const showCompileOutput = new URLSearchParams(location.search).get('showCompileOutput')
+if (showCompileOutput) {
+  initialUserOptions.showCompileOutput = true
+}
+
+const layout = new URLSearchParams(location.search).get('layout')
+if (layout?.toLowerCase() === 'vertical') {
+  initialUserOptions.layout = 'vertical'
+} else {
+  // initialUserOptions.layout = 'vertical'
+  initialUserOptions.layout = 'horizontal'
+}
+
 const store = useStore({
   serializedState: location.hash.slice(1),
   userOptions: initialUserOptions,
@@ -125,7 +138,8 @@ watchEffect(() => history.replaceState({}, '', `#${store.serialize()}`))
     <Repl
       ref="repl"
       :store="store"
-      show-compile-output
+      :layout="store.userOptions.value.layout"
+      :show-compile-output="store.userOptions.value.showCompileOutput || true"
       auto-resize
       :sfc-options="sfcOptions"
       :clear-console="false"

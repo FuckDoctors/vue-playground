@@ -18,6 +18,8 @@ export interface UserOptions {
   styleSource?: string
   showHidden?: boolean
   showOutput?: boolean
+  showCompileOutput?: boolean
+  layout?: string
 }
 export type SerializeState = Record<string, string> & {
   _o?: UserOptions
@@ -30,6 +32,7 @@ const IMPORT_MAP = 'import-map.json'
 export const USER_IMPORT_MAP = 'user-imports.json'
 
 export const useStore = (initial: Initial) => {
+  console.log('initial:', initial)
   const versions = reactive(
     initial.versions || { vue: 'latest', elementPlus: 'latest' }
   )
