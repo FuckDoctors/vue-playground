@@ -11,6 +11,7 @@ import type { BuiltInParserName } from 'prettier'
 import type { SFCOptions } from '@vue/repl'
 import type { Fn } from '@vueuse/core'
 import type { ImportMap } from '@/utils/import-map'
+import { IS_DEV } from './constants'
 
 let loading = $ref(true)
 
@@ -143,7 +144,7 @@ watchEffect(() => history.replaceState({}, '', `#${store.serialize()}`))
       auto-resize
       :sfc-options="sfcOptions"
       :clear-console="false"
-      :show-import-map="store.userOptions.value.showHidden || false"
+      :show-import-map="store.userOptions.value.showHidden || IS_DEV"
       @keydown="handleKeydown"
     />
   </div>
