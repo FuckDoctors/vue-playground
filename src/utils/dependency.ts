@@ -78,6 +78,23 @@ export const genImportMap = (
       path: '/dist/index.min.mjs',
       source: 'unpkg',
     },
+    // for pinia
+    '@vue/devtools-api': {
+      path: '/lib/esm/index.js',
+      source: 'unpkg',
+    },
+    '@vue/composition-api': {
+      path: '/dist/vue-composition-api.mjs',
+      source: 'unpkg',
+    },
+    'vue-demi': {
+      path: '/lib/index.mjs',
+      source: 'unpkg',
+    },
+    pinia: {
+      path: '/dist/pinia.mjs',
+      source: 'unpkg',
+    },
   }
 
   return {
