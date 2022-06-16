@@ -6,6 +6,7 @@ import { IS_DEV } from '@/constants'
 import mainCode from '../template/main.vue?raw'
 import welcomeCode from '../template/welcome.vue?raw'
 import elementPlusCode from '../template/element-plus.js?raw'
+import piniaCode from '../template/pinia.js?raw'
 
 export interface Initial {
   serializedState?: string
@@ -28,6 +29,7 @@ export type SerializeState = Record<string, string> & {
 const MAIN_FILE = 'PlaygroundMain.vue'
 const APP_FILE = 'App.vue'
 const ELEMENT_PLUS_FILE = 'element-plus.js'
+const PINIA_FILE = 'pinia.js'
 const IMPORT_MAP = 'import-map.json'
 export const USER_IMPORT_MAP = 'user-imports.json'
 
@@ -168,7 +170,7 @@ export const useStore = (initial: Initial) => {
         if (filename === '_o') continue
         files[filename] = new File(filename, file as string)
       }
-      // 没有使用传人的userOptions
+      // 没有使用传入的userOptions
       // userOptions = saved._o || {}
       userOptions = Object.assign(userOptions, saved._o || {})
     } else {
@@ -181,6 +183,7 @@ export const useStore = (initial: Initial) => {
         JSON.stringify({ imports: {} }, undefined, 2)
       )
     }
+    files[PINIA_FILE] = new File(PINIA_FILE, piniaCode, hideFile)
     return files
   }
 
