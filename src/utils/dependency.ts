@@ -167,6 +167,6 @@ export const getSupportedEpVersions = (nightly: MaybeRef<boolean>) => {
   const versions = $(getVersions(pkg))
   return computed(() => {
     if (unref(nightly)) return versions
-    return versions.filter((version) => compare(version, '1.1.0-beta.18', '>='))
+    return versions.filter((version) => compare(version, '2.0.0', '>='))
   })
 }

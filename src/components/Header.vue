@@ -6,6 +6,8 @@ import Moon from '../icons/Moon.vue'
 import Share from '../icons/Share.vue'
 import Download from '../icons/Download.vue'
 import GitHub from '../icons/Github.vue'
+import Setting from '../icons/Setting.vue'
+import SettingDialog from './SettingDialog.vue'
 // @ts-ignore
 
 import {
@@ -96,6 +98,12 @@ function toggleDark() {
     String(cls.contains('dark'))
   )
 }
+
+const showSettings = ref(false)
+function toggleSetting() {
+  showSettings.value = !showSettings.value
+}
+
 onMounted(async () => {
   window.addEventListener('click', () => {
     collapseAll()
@@ -110,7 +118,7 @@ onMounted(async () => {
       <span>Vue Playground</span>
     </h1>
     <div class="links">
-       <div
+      <div
         v-for="(v, key) of versions"
         :key="key"
         :title="v.title || v.text"
@@ -142,19 +150,17 @@ onMounted(async () => {
       >
         <Download />
       </button>
-      <button
-          title="View on GitHub"
-          class="github"
-      >
-        <a
-            href="https://github.com/FuckDoctors/vue-playground"
-            target="_blank"
-        >
+      <button title="View on GitHub" class="github">
+        <a href="https://github.com/FuckDoctors/vue-playground" target="_blank">
           <GitHub />
         </a>
       </button>
+      <button title="Setting" class="setting" @click="toggleSetting">
+        <Setting />
+      </button>
     </div>
   </nav>
+  <SettingDialog :show="showSettings" @close="showSettings = false" />
 </template>
 
 <style>

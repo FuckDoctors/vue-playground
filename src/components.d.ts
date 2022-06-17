@@ -6,6 +6,8 @@ import '@vue/runtime-core'
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     Header: typeof import('./components/Header.vue')['default']
+    SettingDialog: typeof import('./components/SettingDialog.vue')['default']
+    'SettingDialog copy': typeof import('./components/SettingDialog copy.vue')['default']
   }
 }
 
