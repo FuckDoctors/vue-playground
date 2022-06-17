@@ -1,6 +1,6 @@
 import { File, type Store, type StoreState, compileFile } from '@vue/repl'
 import { atou, utoa } from '@/utils/encode'
-import { genImportMap, genUnpkgLink, genVueLink } from '@/utils/dependency'
+import { genImportMap, genCdnLink, genVueLink } from '@/utils/dependency'
 import { type ImportMap, mergeImportMap } from '@/utils/import-map'
 import { IS_DEV } from '@/constants'
 import mainCode from '../template/main.vue?raw'
@@ -114,11 +114,11 @@ export const useStore = (initial: Initial) => {
   function generateElementPlusCode(version: string, styleSource?: string) {
     const style = styleSource
       ? styleSource.replace('#VERSION#', version)
-      : genUnpkgLink(
-        nightly ? '@element-plus/nightly' : 'element-plus',
-        version,
-        '/dist/index.css'
-      )
+      : genCdnLink(
+          nightly ? '@element-plus/nightly' : 'element-plus',
+          version,
+          '/dist/index.css'
+        )
     return elementPlusCode.replace('#EP_STYLE#', style)
   }
 
@@ -204,9 +204,7 @@ export const useStore = (initial: Initial) => {
 
   function deleteFile(filename: string) {
     if (filename === ELEMENT_PLUS_FILE) {
-      alert(
-        'You cannot remove it, because Element Plus requires it.'
-      )
+      alert('You cannot remove it, because Element Plus requires it.')
       return
     }
     if (confirm(`Are you sure you want to delete ${filename}?`)) {
