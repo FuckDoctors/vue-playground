@@ -16,12 +16,6 @@ const sfcOptions: SFCOptions = {
 
 const initialUserOptions: UserOptions = {}
 
-const pr = new URLSearchParams(location.search).get('pr')
-if (pr) {
-  initialUserOptions.showHidden = true
-  initialUserOptions.styleSource = `https://preview-${pr}-element-plus.surge.sh/bundle/index.css`
-}
-
 const debug = new URLSearchParams(location.search).get('debug')
 if (debug) {
   initialUserOptions.showHidden = true
@@ -50,32 +44,24 @@ if (layout?.toLowerCase() === 'vertical') {
 const store = useStore({
   serializedState: location.hash.slice(1),
   userOptions: initialUserOptions,
-  pr,
 })
 
-if (pr) {
-  const map: ImportMap = {
-    imports: {
-      'element-plus': `https://preview-${pr}-element-plus.surge.sh/bundle/index.full.min.mjs`,
-      'element-plus/': 'unsupported',
-    },
-  }
-  store.state.files[IMPORT_MAP].code = JSON.stringify(map, undefined, 2)
-  const url = `${location.origin}${location.pathname}#${store.serialize()}`
-  history.replaceState({}, '', url)
-}
+// if (pr) {
+//   const map: ImportMap = {
+//     imports: {
+//       'element-plus': `https://preview-${pr}-element-plus.surge.sh/bundle/index.full.min.mjs`,
+//       'element-plus/': 'unsupported',
+//     },
+//   }
+//   store.state.files[IMPORT_MAP].code = JSON.stringify(map, undefined, 2)
+//   const url = `${location.origin}${location.pathname}#${store.serialize()}`
+//   history.replaceState({}, '', url)
+// }
 
-if (store.pr) {
-  if (!store.userOptions.styleSource)
-    store.userOptions.styleSource = `https://preview-${store.pr}-element-plus.surge.sh/bundle/index.css`
-  store.versions.elementPlus = 'preview'
-}
 store.init().then(() => (loading.value = false))
-if (!store.pr && store.userOptions.styleSource) {
-  store.pr = store.userOptions.styleSource.split('-', 2)[1]
-}
+
 // eslint-disable-next-line no-console
-console.log('Store:', store)
+// console.log('Store:', store)
 
 const handleKeydown = (evt: KeyboardEvent) => {
   if ((evt.ctrlKey || evt.metaKey) && evt.code === 'KeyS') {

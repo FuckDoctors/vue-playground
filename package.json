@@ -1,14 +1,15 @@
 {
-  "name": "element-plus-playground",
+  "name": "vue-playground",
   "version": "2.3.3",
   "packageManager": "pnpm@8.6.6",
-  "description": "Element Plus Playground",
+  "description": "Vue Playground",
   "type": "module",
   "keywords": [
     "element",
     "element-plus",
     "playground",
-    "repl"
+    "repl",
+    "pinia"
   ],
   "license": "MIT",
   "scripts": {

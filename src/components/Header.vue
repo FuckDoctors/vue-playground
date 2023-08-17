@@ -107,7 +107,7 @@ function showSettings() {
           @click="toggleDark()"
         />
         <a
-          href="https://github.com/element-plus/element-plus-playground"
+          href="https://github.com/FuckDoctors/vue-playground"
           target="_blank"
           flex
           hover:color-primary
