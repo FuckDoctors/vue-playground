@@ -20,6 +20,8 @@ export default defineConfig(async ({ mode }) => {
 
   const repl = await getPackageInfo('@vue/repl')
   return {
+    base: env.VITE_BASE_URL || '/',
+
     resolve: {
       alias: {
         '@': pathSrc,
