@@ -13,7 +13,7 @@ export interface Dependency {
 const VUE_DEMI_VERSION = '0.14.5'
 
 export type Cdn = 'unpkg' | 'jsdelivr' | 'jsdelivr-fastly'
-export const cdn = useLocalStorage<Cdn>('setting-cdn', 'jsdelivr-fastly')
+export const cdn = useLocalStorage<Cdn>('setting-cdn', 'unpkg')
 
 export const genCdnLink = (
   pkg: string,
