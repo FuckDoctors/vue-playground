@@ -4,9 +4,9 @@ import { createPinia } from 'pinia'
 let isPiniainstalled = false
 
 export function setupPinia() {
-    if (isPiniainstalled) return
+  if (isPiniainstalled) return
 
-    const instance = getCurrentInstance()
-    instance.appContext.app.use(createPinia())
-    isPiniainstalled = true
+  const instance = getCurrentInstance()
+  instance.appContext.app.use(createPinia())
+  isPiniainstalled = true
 }

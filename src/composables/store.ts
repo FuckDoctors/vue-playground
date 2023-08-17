@@ -1,64 +1,84 @@
 import { File, type Store, type StoreState, compileFile } from '@vue/repl'
+import { type UnwrapNestedRefs } from 'vue'
 import { atou, utoa } from '@/utils/encode'
-import { genImportMap, genUnpkgLink, genVueLink } from '@/utils/dependency'
+import { genCdnLink, genImportMap, genVueLink } from '@/utils/dependency'
 import { type ImportMap, mergeImportMap } from '@/utils/import-map'
 import { IS_DEV } from '@/constants'
 import mainCode from '../template/main.vue?raw'
 import welcomeCode from '../template/welcome.vue?raw'
 import elementPlusCode from '../template/element-plus.js?raw'
+import tsconfigCode from '../template/tsconfig.json?raw'
 import piniaCode from '../template/pinia.js?raw'
 
 export interface Initial {
   serializedState?: string
   versions?: Versions
   userOptions?: UserOptions
+  pr?: string | null
 }
-export type VersionKey = 'vue' | 'elementPlus'
+export type VersionKey = 'vue' | 'elementPlus' | 'typescript' | 'pinia'
 export type Versions = Record<VersionKey, string>
 export interface UserOptions {
   styleSource?: string
   showHidden?: boolean
   showOutput?: boolean
   showCompileOutput?: boolean
-  layout?: string
+  layout?: 'horizontal' | 'vertical'
 }
 export type SerializeState = Record<string, string> & {
   _o?: UserOptions
 }
 
-const MAIN_FILE = 'PlaygroundMain.vue'
-const APP_FILE = 'App.vue'
-const ELEMENT_PLUS_FILE = 'element-plus.js'
-const PINIA_FILE = 'pinia.js'
-const IMPORT_MAP = 'import-map.json'
-export const USER_IMPORT_MAP = 'user-imports.json'
+const MAIN_FILE = 'src/PlaygroundMain.vue'
+const APP_FILE = 'src/App.vue'
+const ELEMENT_PLUS_FILE = 'src/element-plus.js'
+const LEGACY_IMPORT_MAP = 'src/import_map.json'
+export const IMPORT_MAP = 'import-map.json'
+export const TSCONFIG = 'tsconfig.json'
+const PINIA_FILE = 'src/pinia.js'
 
 export const useStore = (initial: Initial) => {
-  console.log('initial:', initial)
   const versions = reactive(
-    initial.versions || { vue: 'latest', elementPlus: 'latest' }
+    initial.versions ||
+    ({
+      vue: 'latest',
+      elementPlus: 'latest',
+      typescript: 'latest',
+      pinia: 'latest',
+    } satisfies Versions)
   )
 
-  let compiler = $(shallowRef<typeof import('vue/compiler-sfc')>())
-  const [nightly, toggleNightly] = $(useToggle(false))
-  let userOptions = $ref<UserOptions>(initial.userOptions || {})
-  const hideFile = $computed(() => !IS_DEV && !userOptions.showHidden)
-  console.log(userOptions.showHidden, hideFile)
+  const compiler = shallowRef<typeof import('vue/compiler-sfc')>()
+  const [nightly, toggleNightly] = useToggle(false)
+  const userOptions = ref<UserOptions>(initial.userOptions || {})
+  const hideFile = computed(() => !IS_DEV && !userOptions.value.showHidden)
 
-  const files = initFiles(initial.serializedState || '')
-  const state = reactive({
+  const _files = initFiles(initial.serializedState || '')
+
+  let activeFile = _files[APP_FILE]
+  if (!activeFile) activeFile = Object.values(_files)[0]
+
+  const state: StoreState = reactive({
     mainFile: MAIN_FILE,
-    files,
-    activeFile: files[APP_FILE],
+    files: _files,
+    activeFile,
     errors: [],
     vueRuntimeURL: '',
+    vueServerRendererURL: '',
+    typescriptVersion: computed(() => versions.typescript),
+    resetFlip: false,
+    locale: undefined,
+    dependencyVersion: computed(() => ({
+      'element-plus': versions.elementPlus,
+      pinia: versions.pinia,
+    })),
   })
 
-  const bultinImportMap = $computed<ImportMap>(() =>
-    genImportMap(versions, nightly)
+  const bultinImportMap = computed<ImportMap>(() =>
+    genImportMap(versions, nightly.value)
   )
-  const userImportMap = $computed<ImportMap>(() => {
-    const code = state.files[USER_IMPORT_MAP]?.code.trim()
+  const userImportMap = computed<ImportMap>(() => {
+    const code = state.files[IMPORT_MAP]?.code.trim()
     if (!code) return {}
     let map: ImportMap = {}
     try {
@@ -68,45 +88,38 @@ export const useStore = (initial: Initial) => {
     }
     return map
   })
-  const importMap = $computed<ImportMap>(() =>
-    mergeImportMap(bultinImportMap, userImportMap)
+  const importMap = computed<ImportMap>(() =>
+    mergeImportMap(bultinImportMap.value, userImportMap.value)
   )
 
   // eslint-disable-next-line no-console
-  console.log('Files:', files, 'Options:', userOptions)
+  // console.log('Files:', state.files, 'Options:', userOptions)
 
-  const store: Store = reactive({
+  const store = reactive<Store>({
     state,
-    compiler: $$(compiler),
+    compiler: compiler as any,
+    initialShowOutput: userOptions.value.showOutput || false,
+    initialOutputMode: 'preview',
+    init,
     setActive,
     addFile,
     deleteFile,
     getImportMap,
-    initialShowOutput: userOptions.showOutput || false,
-    initialOutputMode: 'preview',
+    renameFile,
+    getTsConfig,
+    reloadLanguageTools: undefined,
   })
 
-  watch(
-    $$(importMap),
-    (content) => {
-      state.files[IMPORT_MAP] = new File(
-        IMPORT_MAP,
-        JSON.stringify(content, undefined, 2),
-        hideFile
-      )
-    },
-    { immediate: true, deep: true }
-  )
   watch(
     () => versions.elementPlus,
     (version) => {
       const file = new File(
         ELEMENT_PLUS_FILE,
-        generateElementPlusCode(version, userOptions.styleSource).trim(),
-        hideFile
+        generateElementPlusCode(version, userOptions.value.styleSource).trim(),
+        hideFile.value
       )
       state.files[ELEMENT_PLUS_FILE] = file
-      compileFile(store, file)
+      compileFile(store, file).then((errs) => (state.errors = errs))
     },
     { immediate: true }
   )
@@ -114,18 +127,28 @@ export const useStore = (initial: Initial) => {
   function generateElementPlusCode(version: string, styleSource?: string) {
     const style = styleSource
       ? styleSource.replace('#VERSION#', version)
-      : genUnpkgLink(
-        nightly ? '@element-plus/nightly' : 'element-plus',
+      : genCdnLink(
+        nightly.value ? '@element-plus/nightly' : 'element-plus',
         version,
         '/dist/index.css'
       )
-    return elementPlusCode.replace('#EP_STYLE#', style)
+    return elementPlusCode.replace('#STYLE#', style)
   }
+
+  watch(
+    () => versions.pinia,
+    (version) => {
+      const file = new File(PINIA_FILE, piniaCode.trim(), hideFile.value)
+      state.files[PINIA_FILE] = file
+      compileFile(store, file).then((errs) => (state.errors = errs))
+    },
+    { immediate: true }
+  )
 
   async function setVueVersion(version: string) {
     const { compilerSfc, runtimeDom } = genVueLink(version)
 
-    compiler = await import(/* @vite-ignore */ compilerSfc)
+    compiler.value = await import(/* @vite-ignore */ compilerSfc)
     state.vueRuntimeURL = runtimeDom
     versions.vue = version
 
@@ -133,20 +156,40 @@ export const useStore = (initial: Initial) => {
     console.info(`[@vue/repl] Now using Vue version: ${version}`)
   }
 
+  let inited = false
+
   async function init() {
+    if (inited) return
+
     await setVueVersion(versions.vue)
 
+    state.errors = []
     for (const file of Object.values(state.files)) {
-      compileFile(store, file)
+      compileFile(store, file).then((errs) => state.errors.push(...errs))
     }
 
-    watchEffect(() => compileFile(store, state.activeFile))
+    watchEffect(() =>
+      compileFile(store, state.activeFile).then((errs) => (state.errors = errs))
+    )
+
+    watch(
+      () => [
+        state.files[TSCONFIG]?.code,
+        state.typescriptVersion,
+        state.locale,
+        state.dependencyVersion,
+      ],
+      useDebounceFn(() => store.reloadLanguageTools?.(), 300),
+      { deep: true }
+    )
+
+    inited = true
   }
 
-  function getFiles(download: boolean = false) {
+  function getFiles() {
     const exported: Record<string, string> = {}
     for (const file of Object.values(state.files)) {
-      if (!download && file.hidden) continue
+      if (file.hidden) continue
       exported[file.filename] = file.code
     }
     return exported
@@ -154,7 +197,7 @@ export const useStore = (initial: Initial) => {
 
   function serialize() {
     const state: SerializeState = { ...getFiles() }
-    state._o = userOptions
+    state._o = userOptions.value
     return utoa(JSON.stringify(state))
   }
   function deserialize(text: string): SerializeState {
@@ -166,24 +209,33 @@ export const useStore = (initial: Initial) => {
     const files: StoreState['files'] = {}
     if (serializedState) {
       const saved = deserialize(serializedState)
-      for (const [filename, file] of Object.entries(saved)) {
+      for (let [filename, file] of Object.entries(saved)) {
         if (filename === '_o') continue
+        if (
+          ![IMPORT_MAP, TSCONFIG].includes(filename) &&
+          !filename.startsWith('src/')
+        ) {
+          filename = `src/${filename}`
+        }
+        if (filename === LEGACY_IMPORT_MAP) {
+          filename = IMPORT_MAP
+        }
         files[filename] = new File(filename, file as string)
       }
-      // 没有使用传入的userOptions
-      // userOptions = saved._o || {}
-      userOptions = Object.assign(userOptions, saved._o || {})
+      userOptions.value = saved._o || {}
     } else {
       files[APP_FILE] = new File(APP_FILE, welcomeCode)
     }
-    files[MAIN_FILE] = new File(MAIN_FILE, mainCode, hideFile)
-    if (!files[USER_IMPORT_MAP]) {
-      files[USER_IMPORT_MAP] = new File(
-        USER_IMPORT_MAP,
+    files[MAIN_FILE] = new File(MAIN_FILE, mainCode, hideFile.value)
+    if (!files[IMPORT_MAP]) {
+      files[IMPORT_MAP] = new File(
+        IMPORT_MAP,
         JSON.stringify({ imports: {} }, undefined, 2)
       )
     }
-    files[PINIA_FILE] = new File(PINIA_FILE, piniaCode, hideFile)
+    if (!files[TSCONFIG]) {
+      files[TSCONFIG] = new File(TSCONFIG, tsconfigCode)
+    }
     return files
   }
 
@@ -202,14 +254,66 @@ export const useStore = (initial: Initial) => {
     setActive(file.filename)
   }
 
-  function deleteFile(filename: string) {
-    if (filename === ELEMENT_PLUS_FILE) {
-      alert(
-        'You cannot remove it, because Element Plus requires it.'
-      )
+  function renameFile(oldFilename: string, newFilename: string) {
+    const file = state.files[oldFilename]
+
+    if (!file) {
+      state.errors = [`Could not rename "${oldFilename}", file not found`]
       return
     }
-    if (confirm(`Are you sure you want to delete ${filename}?`)) {
+
+    if (!newFilename || oldFilename === newFilename) {
+      state.errors = [`Cannot rename "${oldFilename}" to "${newFilename}"`]
+      return
+    }
+
+    if (
+      file.hidden ||
+      [APP_FILE, MAIN_FILE, ELEMENT_PLUS_FILE, PINIA_FILE, IMPORT_MAP].includes(
+        oldFilename
+      )
+    ) {
+      state.errors = [`Cannot rename ${oldFilename}`]
+      return
+    }
+
+    file.filename = newFilename
+
+    const newFiles: Record<string, File> = {}
+
+    // Preserve iteration order for files
+    for (const name of Object.keys(_files)) {
+      if (name === oldFilename) {
+        newFiles[newFilename] = file
+      } else {
+        newFiles[name] = _files[name]
+      }
+    }
+
+    state.files = newFiles
+    compileFile(store, file)
+  }
+
+  async function deleteFile(filename: string) {
+    if (
+      [ELEMENT_PLUS_FILE, MAIN_FILE, APP_FILE, PINIA_FILE, IMPORT_MAP].includes(
+        filename
+      )
+    ) {
+      ElMessage.warning('You cannot remove it, because playground requires it.')
+      return
+    }
+
+    if (
+      await ElMessageBox.confirm(
+        `Are you sure you want to delete ${filename.replace(/^src\//, '')}?`,
+        {
+          title: 'Delete File',
+          type: 'warning',
+          center: true,
+        }
+      )
+    ) {
       if (state.activeFile.filename === filename) {
         setActive(APP_FILE)
       }
@@ -218,40 +322,48 @@ export const useStore = (initial: Initial) => {
   }
 
   function getImportMap() {
-    return importMap
+    return importMap.value
+  }
+
+  function getTsConfig() {
+    try {
+      return JSON.parse(state.files[TSCONFIG].code)
+    } catch {
+      return {}
+    }
   }
 
   async function setVersion(key: VersionKey, version: string) {
     switch (key) {
-      case 'elementPlus':
-        setElementPlusVersion(version)
-        break
       case 'vue':
         await setVueVersion(version)
+        break
+      case 'elementPlus':
+        versions.elementPlus = version
+        break
+      case 'typescript':
+        versions.typescript = version
+        break
+      case 'pinia':
+        versions.pinia = version
         break
     }
   }
 
-  function setElementPlusVersion(version: string) {
-    versions.elementPlus = version
-  }
-
-  // console.log('showOutput:', userOptions.showOutput)
-
-  return {
-    ...store,
-    showOutput: userOptions.showOutput || false,
-
+  const utils = {
     versions,
-    nightly: $$(nightly),
-    userOptions: $$(userOptions),
-
-    init,
+    nightly,
+    userOptions,
+    pr: initial.pr,
     serialize,
     setVersion,
     toggleNightly,
-    getFiles,
   }
+  Object.assign(store, utils)
+
+  return store as Omit<typeof store, 'init'> & {
+    init: typeof init
+  } & UnwrapNestedRefs<typeof utils>
 }
 
 export type ReplStore = ReturnType<typeof useStore>

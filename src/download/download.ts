@@ -1,4 +1,5 @@
 import { saveAs } from 'file-saver'
+import { type ReplStore } from '@/composables/store'
 
 import index from './template/index.html?raw'
 import main from './template/main.js?raw'
@@ -6,9 +7,8 @@ import pkg from './template/package.json?raw'
 import config from './template/vite.config.js?raw'
 import readme from './template/README.md?raw'
 
-import type { ReplStore } from '@/composables/store'
-
 export async function downloadProject(store: ReplStore) {
+  // eslint-disable-next-line no-alert
   if (!confirm('Download project files?')) {
     return
   }
@@ -26,15 +26,14 @@ export async function downloadProject(store: ReplStore) {
   const src = zip.folder('src')!
   src.file('main.js', main)
 
-  // const files = store.getFiles(true) // 包含隐藏文件
-  let all = false
-  const debug = new URLSearchParams(location.search).get('debug')
-  if (debug) {
-    all = true
-  }
-  const files = store.getFiles(all)
+  const files = store.state.files
+  // eslint-disable-next-line no-restricted-syntax
   for (const file in files) {
-    src.file(file, files[file])
+    if (file !== 'import-map.json') {
+      src.file(file, files[file].code)
+    } else {
+      zip.file(file, files[file].code)
+    }
   }
 
   const blob = await zip.generateAsync({ type: 'blob' })

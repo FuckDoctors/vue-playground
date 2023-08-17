@@ -15,7 +15,7 @@ export function loadStyle() {
   return new Promise((resolve, reject) => {
     const link = document.createElement('link')
     link.rel = 'stylesheet'
-    link.href = '#EP_STYLE#'
+    link.href = '#STYLE#'
     link.addEventListener('load', resolve)
     link.addEventListener('error', reject)
     document.body.append(link)

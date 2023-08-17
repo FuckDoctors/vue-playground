@@ -1,41 +1,43 @@
-import { compare } from 'compare-versions'
-import type { MaybeRef } from '@vueuse/core'
-import type { Versions } from '@/composables/store'
-import type { Ref } from 'vue'
-import type { ImportMap } from '@/utils/import-map'
+import { gte } from 'semver'
+import { type Ref } from 'vue'
+import { type MaybeRef } from '@vueuse/core'
+import { type Versions } from '@/composables/store'
+import { type ImportMap } from '@/utils/import-map'
 
-interface Dependency {
+export interface Dependency {
   pkg?: string
   version?: string
   path: string
-  source?: 'unpkg' | 'jsdelivr'
 }
 
-export const genUnpkgLink = (
+const VUE_DEMI_VERSION = '0.14.5'
+
+export type Cdn = 'unpkg' | 'jsdelivr' | 'jsdelivr-fastly'
+export const cdn = useLocalStorage<Cdn>('setting-cdn', 'jsdelivr-fastly')
+
+export const genCdnLink = (
   pkg: string,
   version: string | undefined,
   path: string
 ) => {
   version = version ? `@${version}` : ''
-  return `https://unpkg.com/${pkg}${version}${path}`
-}
-
-export const genJsdelivrLink = (
-  pkg: string,
-  version: string | undefined,
-  path: string
-) => {
-  version = version ? `@${version}` : ''
-  return `https://cdn.jsdelivr.net/npm/${pkg}${version}${path}`
+  switch (cdn.value) {
+    case 'jsdelivr':
+      return `https://cdn.jsdelivr.net/npm/${pkg}${version}${path}`
+    case 'jsdelivr-fastly':
+      return `https://fastly.jsdelivr.net/npm/${pkg}${version}${path}`
+    case 'unpkg':
+      return `https://unpkg.com/${pkg}${version}${path}`
+  }
 }
 
 export const genVueLink = (version: string) => {
-  const compilerSfc = genUnpkgLink(
+  const compilerSfc = genCdnLink(
     '@vue/compiler-sfc',
     version,
     '/dist/compiler-sfc.esm-browser.js'
   )
-  const runtimeDom = genUnpkgLink(
+  const runtimeDom = genCdnLink(
     '@vue/runtime-dom',
     version,
     '/dist/runtime-dom.esm-browser.js'
@@ -47,7 +49,7 @@ export const genVueLink = (version: string) => {
 }
 
 export const genImportMap = (
-  { vue, elementPlus }: Partial<Versions> = {},
+  { vue, elementPlus, pinia }: Partial<Versions> = {},
   nightly: boolean
 ): ImportMap => {
   const deps: Record<string, Dependency> = {
@@ -55,45 +57,38 @@ export const genImportMap = (
       pkg: '@vue/runtime-dom',
       version: vue,
       path: '/dist/runtime-dom.esm-browser.js',
-      source: 'unpkg',
     },
     '@vue/shared': {
       version: vue,
       path: '/dist/shared.esm-bundler.js',
-      source: 'unpkg',
     },
     'element-plus': {
       pkg: nightly ? '@element-plus/nightly' : 'element-plus',
       version: elementPlus,
       path: '/dist/index.full.min.mjs',
-      source: 'unpkg',
     },
     'element-plus/': {
       pkg: 'element-plus',
       version: elementPlus,
       path: '/',
-      source: 'unpkg',
     },
     '@element-plus/icons-vue': {
-      path: '/dist/index.min.mjs',
-      source: 'unpkg',
+      version: '2',
+      path: '/dist/index.min.js',
     },
     // for pinia
     '@vue/devtools-api': {
       path: '/lib/esm/index.js',
-      source: 'unpkg',
     },
     '@vue/composition-api': {
       path: '/dist/vue-composition-api.mjs',
-      source: 'unpkg',
     },
     'vue-demi': {
       path: '/lib/index.mjs',
-      source: 'unpkg',
     },
     pinia: {
-      path: '/dist/pinia.mjs',
-      source: 'unpkg',
+      version: pinia,
+      path: '/dist/pinia.esm-browser.js',
     },
   }
 
@@ -101,11 +96,7 @@ export const genImportMap = (
     imports: Object.fromEntries(
       Object.entries(deps).map(([key, dep]) => [
         key,
-        (dep.source === 'unpkg' ? genUnpkgLink : genJsdelivrLink)(
-          dep.pkg ?? key,
-          dep.version,
-          dep.path
-        ),
+        genCdnLink(dep.pkg ?? key, dep.version, dep.path),
       ])
     ),
   }
@@ -123,9 +114,18 @@ export const getVersions = (pkg: MaybeRef<string>) => {
 }
 
 export const getSupportedVueVersions = () => {
-  const versions = $(getVersions('vue'))
+  const versions = getVersions('vue')
   return computed(() =>
-    versions.filter((version) => compare(version, '3.2.0', '>='))
+    versions.value.filter((version) => gte(version, '3.2.0'))
+  )
+}
+
+export const getSupportedTSVersions = () => {
+  const versions = getVersions('typescript')
+  return computed(() =>
+    versions.value.filter(
+      (version) => !version.includes('dev') && !version.includes('insiders')
+    )
   )
 }
 
@@ -133,9 +133,18 @@ export const getSupportedEpVersions = (nightly: MaybeRef<boolean>) => {
   const pkg = computed(() =>
     unref(nightly) ? '@element-plus/nightly' : 'element-plus'
   )
-  const versions = $(getVersions(pkg))
+  const versions = getVersions(pkg)
   return computed(() => {
-    if (unref(nightly)) return versions
-    return versions.filter((version) => compare(version, '1.1.0-beta.18', '>='))
+    if (unref(nightly)) return versions.value
+    return versions.value.filter((version) => gte(version, '1.1.0-beta.18'))
   })
+}
+
+export const getSupportedPiniaVersions = () => {
+  const versions = getVersions('pinia')
+  return computed(() =>
+    versions.value.filter(
+      (version) => !version.includes('dev') && !version.includes('insiders')
+    )
+  )
 }

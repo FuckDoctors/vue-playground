@@ -1,7 +1,7 @@
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 import { defineConfig, loadEnv } from 'vite'
 import Unocss from 'unocss/vite'
-import { presetUno } from 'unocss'
 import vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
@@ -14,13 +14,12 @@ import pkg from './package.json'
 const pathSrc = path.resolve(__dirname, 'src')
 
 export default defineConfig(async ({ mode }) => {
-  // 根据当前工作目录中的 `mode` 加载 .env 文件
-  const env = loadEnv(mode, process.cwd())
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  const env = loadEnv(mode, process.cwd(), '')
 
   const repl = await getPackageInfo('@vue/repl')
   return {
-    base: env.VITE_BASE_URL || '/',
-
     resolve: {
       alias: {
         '@': pathSrc,
@@ -30,28 +29,45 @@ export default defineConfig(async ({ mode }) => {
       'import.meta.env.APP_VERSION': JSON.stringify(pkg.version),
       'import.meta.env.REPL_VERSION': JSON.stringify(repl!.version),
     },
+    build: {
+      rollupOptions: {
+        external: ['typescript'],
+      },
+    },
     server: {
       https: true,
       host: true,
     },
     plugins: [
       vue({
-        reactivityTransform: true,
+        script: {
+          defineModel: true,
+          propsDestructure: true,
+          fs: {
+            fileExists: fs.existsSync,
+            readFile: (file) => fs.readFileSync(file, 'utf-8'),
+          },
+        },
       }),
       AutoImport({
+        dirs: [path.resolve(pathSrc, 'composables')],
         imports: ['vue', '@vueuse/core'],
         resolvers: [ElementPlusResolver()],
         dts: path.resolve(pathSrc, 'auto-imports.d.ts'),
       }),
       Components({
+        dirs: [path.resolve(pathSrc, 'components')],
         resolvers: [ElementPlusResolver()],
         dts: path.resolve(pathSrc, 'components.d.ts'),
       }),
-      Unocss({
-        presets: [presetUno()],
+      Unocss(),
+      Mkcert({
+        mkcertPath: env.MKCERT_PATH,
       }),
-      Mkcert(),
       Inspect(),
     ],
+    optimizeDeps: {
+      exclude: ['@vue/repl'],
+    },
   }
 })

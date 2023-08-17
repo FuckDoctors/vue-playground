@@ -1,7 +1,3 @@
 {
-  extends: ['config:base', 'schedule:weekly', 'group:allNonMajor'],
-  labels: ['dependencies'],
-  pin: false,
-  rangeStrategy: 'bump',
-  node: false,
+  extends: ['github>sxzz/renovate-config'],
 }
