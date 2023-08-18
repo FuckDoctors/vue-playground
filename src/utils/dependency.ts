@@ -12,22 +12,25 @@ export interface Dependency {
 
 const VUE_DEMI_VERSION = '0.14.5'
 
-export type Cdn = 'unpkg' | 'jsdelivr' | 'jsdelivr-fastly'
-export const cdn = useLocalStorage<Cdn>('setting-cdn', 'unpkg')
+export type Cdn = 'unpkg' | 'jsdelivr' | 'jsdelivr-fastly' | 'npmmirror'
+export const cdn = useLocalStorage<Cdn>('setting-cdn', 'npmmirror')
 
 export const genCdnLink = (
   pkg: string,
   version: string | undefined,
   path: string
 ) => {
-  version = version ? `@${version}` : ''
+  let ver = version ? `@${version}` : ''
   switch (cdn.value) {
     case 'jsdelivr':
-      return `https://cdn.jsdelivr.net/npm/${pkg}${version}${path}`
+      return `https://cdn.jsdelivr.net/npm/${pkg}${ver}${path}`
     case 'jsdelivr-fastly':
-      return `https://fastly.jsdelivr.net/npm/${pkg}${version}${path}`
+      return `https://fastly.jsdelivr.net/npm/${pkg}${ver}${path}`
     case 'unpkg':
-      return `https://unpkg.com/${pkg}${version}${path}`
+      return `https://unpkg.com/${pkg}${ver}${path}`
+    case 'npmmirror':
+      ver = version || 'latest'
+      return `https://registry.npmmirror.com/${pkg}/${ver}/files${path}`
   }
 }
 

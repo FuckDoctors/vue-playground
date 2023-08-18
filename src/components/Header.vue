@@ -127,6 +127,7 @@ function showSettings() {
           <el-option value="jsdelivr" label="jsDelivr" />
           <el-option value="jsdelivr-fastly" label="jsDelivr Fastly" />
           <el-option value="unpkg" label="unpkg" />
+          <el-option value="npmmirror" label="npmmirror" />
         </el-select>
       </el-form-item>
 
