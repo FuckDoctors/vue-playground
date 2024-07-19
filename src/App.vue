@@ -1,67 +1,39 @@
 <script setup lang="ts">
-import { Repl, type SFCOptions } from '@vue/repl'
+import { Repl } from '@vue/repl'
 import Monaco from '@vue/repl/monaco-editor'
-import { type ImportMap } from '@/utils/import-map'
-import { type UserOptions } from '@/composables/store'
+import { useStore } from './composables/store'
 
 const loading = ref(true)
+const replRef = ref<InstanceType<typeof Repl>>()
 
-// enable experimental features
-const sfcOptions: SFCOptions = {
-  script: {
-    reactivityTransform: true,
-    defineModel: true,
-  },
+const previewOptions = {
+  headHTML: `
+    <script src="https://cdn.jsdelivr.net/npm/@unocss/runtime"><\/script>
+    <script>
+      window.__unocss = {
+        rules: [],
+        presets: [],
+      }
+    <\/script>
+  `,
 }
 
-const initialUserOptions: UserOptions = {}
+const dark = useDark()
 
-const debug = new URLSearchParams(location.search).get('debug')
-if (debug) {
-  initialUserOptions.showHidden = true
-}
-
-const showOutput = new URLSearchParams(location.search).get('showOutput')
-if (showOutput) {
-  initialUserOptions.showOutput = true
-}
-
-const showCompileOutput = new URLSearchParams(location.search).get(
-  'showCompileOutput'
-)
-if (showCompileOutput) {
-  initialUserOptions.showCompileOutput = true
-}
-
-const layout = new URLSearchParams(location.search).get('layout')
-if (layout?.toLowerCase() === 'vertical') {
-  initialUserOptions.layout = 'vertical'
-} else {
-  // initialUserOptions.layout = 'vertical'
-  initialUserOptions.layout = 'horizontal'
+const theme = new URLSearchParams(location.search).get('theme')
+if (theme === 'dark') {
+  dark.value = true
 }
 
 const store = useStore({
   serializedState: location.hash.slice(1),
-  userOptions: initialUserOptions,
+  initialized: () => {
+    loading.value = false
+  },
 })
 
-// if (pr) {
-//   const map: ImportMap = {
-//     imports: {
-//       'element-plus': `https://preview-${pr}-element-plus.surge.sh/bundle/index.full.min.mjs`,
-//       'element-plus/': 'unsupported',
-//     },
-//   }
-//   store.state.files[IMPORT_MAP].code = JSON.stringify(map, undefined, 2)
-//   const url = `${location.origin}${location.pathname}#${store.serialize()}`
-//   history.replaceState({}, '', url)
-// }
-
-store.init().then(() => (loading.value = false))
-
 // eslint-disable-next-line no-console
-// console.log('Store:', store)
+console.log('Store:', store)
 
 const handleKeydown = (evt: KeyboardEvent) => {
   if ((evt.ctrlKey || evt.metaKey) && evt.code === 'KeyS') {
@@ -70,26 +42,27 @@ const handleKeydown = (evt: KeyboardEvent) => {
   }
 }
 
-const dark = useDark()
-
 // persist state
-watchEffect(() => history.replaceState({}, '', `#${store.serialize()}`))
+watchEffect(() =>
+  history.replaceState(
+    {},
+    '',
+    `${location.origin}${location.pathname}#${store.serialize()}`,
+  ),
+)
+
+const refreshPreview = () => {
+  replRef.value?.reload()
+}
 </script>
 
 <template>
   <div v-if="!loading" antialiased>
-    <Header :store="store" />
-    <Repl
-      :theme="dark ? 'dark' : 'light'"
-      :store="store"
-      :editor="Monaco"
-      :layout="store.userOptions.layout"
-      :show-compile-output="store.userOptions.showCompileOutput || true"
-      auto-resize
-      :sfc-options="sfcOptions"
-      :clear-console="false"
-      @keydown="handleKeydown"
-    />
+    <Header :store="store" @refresh="refreshPreview" />
+    <Repl ref="replRef" :theme="dark ? 'dark' : 'light'" :preview-theme="true" :store="store" :editor="Monaco"
+      :preview-options="previewOptions" :layout="store.userOptions.layout"
+      :show-compile-output="store.userOptions.showCompileOutput" auto-resize :clear-console="false"
+      :show-output="store.userOptions.showOutput" @keydown="handleKeydown" />
   </div>
   <template v-else>
     <div v-loading="{ text: 'Loading...' }" h-100vh />

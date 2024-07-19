@@ -1,8 +1,8 @@
 import { gte } from 'semver'
-import { type Ref } from 'vue'
-import { type MaybeRef } from '@vueuse/core'
-import { type Versions } from '@/composables/store'
-import { type ImportMap } from '@/utils/import-map'
+import type { Ref } from 'vue'
+import type { MaybeRef } from '@vueuse/core'
+import type { Versions } from '@/composables/store'
+import type { ImportMap } from '@vue/repl'
 
 export interface Dependency {
   pkg?: string
@@ -34,21 +34,12 @@ export const genCdnLink = (
   }
 }
 
-export const genVueLink = (version: string) => {
-  const compilerSfc = genCdnLink(
+export const genCompilerSfcLink = (version: string) => {
+  return genCdnLink(
     '@vue/compiler-sfc',
     version,
-    '/dist/compiler-sfc.esm-browser.js'
+    '/dist/compiler-sfc.esm-browser.js',
   )
-  const runtimeDom = genCdnLink(
-    '@vue/runtime-dom',
-    version,
-    '/dist/runtime-dom.esm-browser.js'
-  )
-  return {
-    compilerSfc,
-    runtimeDom,
-  }
 }
 
 export const genImportMap = (

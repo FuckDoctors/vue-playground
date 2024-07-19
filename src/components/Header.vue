@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type Ref } from 'vue'
-import { type ReplStore, type VersionKey } from '@/composables/store'
+import { type Store, type VersionKey } from '@/composables/store'
 import {
   cdn,
   getSupportedEpVersions,
@@ -14,6 +14,9 @@ import { downloadProject } from '@/download/download'
 const appVersion = import.meta.env.APP_VERSION
 const replVersion = import.meta.env.REPL_VERSION
 
+const emit = defineEmits<{
+  (e: 'refresh'): void
+}>()
 const nightly = ref(false)
 const dark = useDark()
 const toggleDark = useToggle(dark)
@@ -21,7 +24,7 @@ const toggleDark = useToggle(dark)
 const showSettingDrawer = ref(false)
 
 const { store } = defineProps<{
-  store: ReplStore
+  store: Store
 }>()
 
 interface Version {
@@ -76,6 +79,10 @@ async function download() {
 function showSettings() {
   showSettingDrawer.value = true
 }
+
+function refreshView() {
+  emit('refresh')
+}
 </script>
 
 <template>
@@ -98,6 +105,7 @@ function showSettings() {
 
     <div flex="~ gap-2" items-center>
       <div flex="~ gap-4" text-lg>
+        <button i-ri-refresh-line hover:color-primary @click="refreshView" />
         <button hover:color-primary i-ri-share-line @click="copyLink" />
         <button hover:color-primary i-ri-download-line @click="download" />
         <button
