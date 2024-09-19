@@ -70,7 +70,22 @@ export const genImportMap = (
     },
     // for pinia
     '@vue/devtools-api': {
-      path: '/lib/esm/index.js',
+      path: '/dist/index.js',
+    },
+    '@vue/devtools-kit': {
+      path: '/dist/index.js',
+    },
+    '@vue/devtools-shared': {
+      path: '/dist/index.js',
+    },
+    'perfect-debounce': {
+      path: '/dist/index.mjs',
+    },
+    'hookable': {
+      path: '/dist/index.mjs',
+    },
+    'birpc': {
+      path: '/dist/index.mjs',
     },
     '@vue/composition-api': {
       path: '/dist/vue-composition-api.mjs',
