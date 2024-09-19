@@ -1,11 +1,11 @@
 import { saveAs } from 'file-saver'
-import { type ReplStore } from '@/composables/store'
+import type { ReplStore } from '@/composables/store'
 
 import index from './template/index.html?raw'
 import main from './template/main.js?raw'
 import pkg from './template/package.json?raw'
-import config from './template/vite.config.js?raw'
 import readme from './template/README.md?raw'
+import config from './template/vite.config.js?raw'
 
 export async function downloadProject(store: ReplStore) {
   // eslint-disable-next-line no-alert

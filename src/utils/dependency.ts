@@ -1,8 +1,8 @@
 import { gte } from 'semver'
-import type { Ref } from 'vue'
-import type { MaybeRef } from '@vueuse/core'
 import type { Versions } from '@/composables/store'
 import type { ImportMap } from '@vue/repl'
+import type { MaybeRef } from '@vueuse/core'
+import type { Ref } from 'vue'
 
 export interface Dependency {
   pkg?: string
@@ -10,15 +10,13 @@ export interface Dependency {
   path: string
 }
 
-const VUE_DEMI_VERSION = '0.14.5'
-
 export type Cdn = 'unpkg' | 'jsdelivr' | 'jsdelivr-fastly' | 'npmmirror'
 export const cdn = useLocalStorage<Cdn>('setting-cdn', 'npmmirror')
 
 export const genCdnLink = (
   pkg: string,
   version: string | undefined,
-  path: string
+  path: string,
 ) => {
   let ver = version ? `@${version}` : ''
   switch (cdn.value) {
@@ -44,7 +42,7 @@ export const genCompilerSfcLink = (version: string) => {
 
 export const genImportMap = (
   { vue, elementPlus, pinia }: Partial<Versions> = {},
-  nightly: boolean
+  nightly: boolean,
 ): ImportMap => {
   const deps: Record<string, Dependency> = {
     vue: {
@@ -91,14 +89,14 @@ export const genImportMap = (
       Object.entries(deps).map(([key, dep]) => [
         key,
         genCdnLink(dep.pkg ?? key, dep.version, dep.path),
-      ])
+      ]),
     ),
   }
 }
 
 export const getVersions = (pkg: MaybeRef<string>) => {
   const url = computed(
-    () => `https://data.jsdelivr.com/v1/package/npm/${unref(pkg)}`
+    () => `https://data.jsdelivr.com/v1/package/npm/${unref(pkg)}`,
   )
   return useFetch(url, {
     initialData: [],
@@ -110,7 +108,7 @@ export const getVersions = (pkg: MaybeRef<string>) => {
 export const getSupportedVueVersions = () => {
   const versions = getVersions('vue')
   return computed(() =>
-    versions.value.filter((version) => gte(version, '3.2.0'))
+    versions.value.filter((version) => gte(version, '3.2.0')),
   )
 }
 
@@ -118,14 +116,14 @@ export const getSupportedTSVersions = () => {
   const versions = getVersions('typescript')
   return computed(() =>
     versions.value.filter(
-      (version) => !version.includes('dev') && !version.includes('insiders')
-    )
+      (version) => !version.includes('dev') && !version.includes('insiders'),
+    ),
   )
 }
 
 export const getSupportedEpVersions = (nightly: MaybeRef<boolean>) => {
   const pkg = computed(() =>
-    unref(nightly) ? '@element-plus/nightly' : 'element-plus'
+    unref(nightly) ? '@element-plus/nightly' : 'element-plus',
   )
   const versions = getVersions(pkg)
   return computed(() => {
@@ -138,7 +136,7 @@ export const getSupportedPiniaVersions = () => {
   const versions = getVersions('pinia')
   return computed(() =>
     versions.value.filter(
-      (version) => !version.includes('dev') && !version.includes('insiders')
-    )
+      (version) => !version.includes('dev') && !version.includes('insiders'),
+    ),
   )
 }

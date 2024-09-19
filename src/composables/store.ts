@@ -1,24 +1,24 @@
 import {
-  File,
-  type ImportMap,
-  type StoreState,
   compileFile,
+  File,
   mergeImportMap,
   useStore as useReplStore,
+  type ImportMap,
+  type StoreState,
 } from '@vue/repl'
 import { objectOmit } from '@vueuse/core'
-import { atou, utoa } from '@/utils/encode'
+import { IS_DEV } from '@/constants'
 import {
   genCdnLink,
   genCompilerSfcLink,
   genImportMap,
 } from '@/utils/dependency'
-import { IS_DEV } from '@/constants'
+import { atou, utoa } from '@/utils/encode'
 import elementPlusCode from '../template/element-plus.js?raw'
 import mainCode from '../template/main.vue?raw'
-import welcomeCode from '../template/welcome.vue?raw'
-import tsconfigCode from '../template/tsconfig.json?raw'
 import piniaCode from '../template/pinia.js?raw'
+import tsconfigCode from '../template/tsconfig.json?raw'
+import welcomeCode from '../template/welcome.vue?raw'
 
 export interface Initial {
   serializedState?: string
@@ -138,7 +138,7 @@ export const useStore = (initial: Initial) => {
         (errs) => (store.errors = errs),
       )
     },
-    { immediate: true }
+    { immediate: true },
   )
 
   watch(
@@ -158,10 +158,10 @@ export const useStore = (initial: Initial) => {
     const style = styleSource
       ? styleSource.replace('#VERSION#', version)
       : genCdnLink(
-        nightly.value ? '@element-plus/nightly' : 'element-plus',
-        version,
-        '/dist/index.css',
-      )
+          nightly.value ? '@element-plus/nightly' : 'element-plus',
+          version,
+          '/dist/index.css',
+        )
     const darkStyle = style.replace(
       '/dist/index.css',
       '/theme-chalk/dark/css-vars.css',
@@ -195,13 +195,13 @@ export const useStore = (initial: Initial) => {
 
   watch(
     () => versions.pinia,
-    (version) => {
+    () => {
       store.files[PINIA_FILE].code = piniaCode.trim()
       compileFile(store, store.files[PINIA_FILE]).then(
         (errs) => (store.errors = errs),
       )
     },
-    { immediate: true }
+    { immediate: true },
   )
 
   function serialize() {
@@ -238,11 +238,7 @@ export const useStore = (initial: Initial) => {
       )
     }
     if (!files[PINIA_FILE]) {
-      files[PINIA_FILE] = new File(
-        PINIA_FILE,
-        piniaCode.trim(),
-        hideFile,
-      )
+      files[PINIA_FILE] = new File(PINIA_FILE, piniaCode.trim(), hideFile)
     }
     if (!files[TSCONFIG]) {
       files[TSCONFIG] = new File(TSCONFIG, tsconfigCode)
@@ -288,7 +284,7 @@ export const useStore = (initial: Initial) => {
     if (
       file.hidden ||
       [APP_FILE, MAIN_FILE, ELEMENT_PLUS_FILE, PINIA_FILE, IMPORT_MAP].includes(
-        oldFilename
+        oldFilename,
       )
     ) {
       store.errors = [`Cannot rename ${oldFilename}`]
@@ -315,7 +311,7 @@ export const useStore = (initial: Initial) => {
   async function deleteFile(filename: string) {
     if (
       [ELEMENT_PLUS_FILE, MAIN_FILE, APP_FILE, PINIA_FILE, IMPORT_MAP].includes(
-        filename
+        filename,
       )
     ) {
       ElMessage.warning('You cannot remove it, because playground requires it.')
@@ -329,7 +325,7 @@ export const useStore = (initial: Initial) => {
           title: 'Delete File',
           type: 'warning',
           center: true,
-        }
+        },
       )
     ) {
       if (store.activeFile.filename === filename) {

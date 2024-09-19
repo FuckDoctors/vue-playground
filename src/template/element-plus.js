@@ -1,5 +1,5 @@
-import { getCurrentInstance } from 'vue'
 import ElementPlus from 'element-plus'
+import { getCurrentInstance } from 'vue'
 
 let installed = false
 await loadStyle()
@@ -22,5 +22,5 @@ export function loadStyle() {
       document.body.append(link)
     })
   })
-  return Promise.all(styles)
+  return Promise.allSettled(styles)
 }

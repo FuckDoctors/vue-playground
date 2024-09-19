@@ -1,5 +1,5 @@
-import { getCurrentInstance } from 'vue'
 import { createPinia } from 'pinia'
+import { getCurrentInstance } from 'vue'
 
 let isPiniainstalled = false
 

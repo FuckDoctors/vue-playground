@@ -1,3 +1,4 @@
+<!-- eslint-disable no-useless-escape -->
 <script setup lang="ts">
 import { Repl } from '@vue/repl'
 import Monaco from '@vue/repl/monaco-editor'
@@ -5,6 +6,16 @@ import { useStore } from './composables/store'
 
 const loading = ref(true)
 const replRef = ref<InstanceType<typeof Repl>>()
+
+const AUTO_SAVE_KEY = 'auto-save-state'
+function getAutoSaveState() {
+  return JSON.parse(localStorage.getItem(AUTO_SAVE_KEY) || 'true')
+}
+function setAutoSaveState(value: boolean) {
+  localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(value))
+}
+
+const autoSave = ref(getAutoSaveState())
 
 const previewOptions = {
   headHTML: `
@@ -54,15 +65,28 @@ watchEffect(() =>
 const refreshPreview = () => {
   replRef.value?.reload()
 }
+
+watch(autoSave, setAutoSaveState)
 </script>
 
 <template>
   <div v-if="!loading" antialiased>
     <Header :store="store" @refresh="refreshPreview" />
-    <Repl ref="replRef" :theme="dark ? 'dark' : 'light'" :preview-theme="true" :store="store" :editor="Monaco"
-      :preview-options="previewOptions" :layout="store.userOptions.layout"
-      :show-compile-output="store.userOptions.showCompileOutput" auto-resize :clear-console="false"
-      :show-output="store.userOptions.showOutput" @keydown="handleKeydown" />
+    <Repl
+      ref="replRef"
+      v-model="autoSave"
+      :theme="dark ? 'dark' : 'light'"
+      :preview-theme="true"
+      :store="store"
+      :editor="Monaco"
+      :preview-options="previewOptions"
+      :layout="store.userOptions.layout"
+      :show-compile-output="store.userOptions.showCompileOutput"
+      auto-resize
+      :clear-console="false"
+      :show-output="store.userOptions.showOutput"
+      @keydown="handleKeydown"
+    />
   </div>
   <template v-else>
     <div v-loading="{ text: 'Loading...' }" h-100vh />

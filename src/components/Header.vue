@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { type Ref } from 'vue'
-import { type Store, type VersionKey } from '@/composables/store'
+import { languageToolsVersion } from '@vue/repl'
+import { downloadProject } from '@/download/download'
 import {
   cdn,
   getSupportedEpVersions,
@@ -8,8 +8,9 @@ import {
   getSupportedTSVersions,
   getSupportedVueVersions,
 } from '@/utils/dependency'
+import type { Store, VersionKey } from '@/composables/store'
 
-import { downloadProject } from '@/download/download'
+import type { Ref } from 'vue'
 
 const appVersion = import.meta.env.APP_VERSION
 const replVersion = import.meta.env.REPL_VERSION
@@ -89,29 +90,33 @@ function refreshView() {
   <nav>
     <div leading="[var(--nav-height)]" m-0 flex items-center font-medium>
       <img
-        h-24px
         relative
         mr-2
+        h-24px
         v="mid"
         top="-2px"
         alt="logo"
         src="../assets/logo.svg"
       />
-      <div lt-sm-hidden flex="~ gap-1" items-center>
+      <div flex="~ gap-1" items-center lt-sm-hidden>
         <div text-xl>Playground</div>
-        <el-tag size="small">v{{ appVersion }}, repl v{{ replVersion }}</el-tag>
+        <el-tag size="small"
+          >v{{ appVersion }}, repl v{{ replVersion }}, volar v{{
+            languageToolsVersion
+          }}</el-tag
+        >
       </div>
     </div>
 
     <div flex="~ gap-2" items-center>
       <div flex="~ gap-4" text-lg>
         <button i-ri-refresh-line hover:color-primary @click="refreshView" />
-        <button hover:color-primary i-ri-share-line @click="copyLink" />
-        <button hover:color-primary i-ri-download-line @click="download" />
+        <button i-ri-share-line hover:color-primary @click="copyLink" />
+        <button i-ri-download-line hover:color-primary @click="download" />
         <button
-          hover:color-primary
           i-ri-sun-line
           dark:i-ri-moon-line
+          hover:color-primary
           @click="toggleDark()"
         />
         <a
@@ -123,7 +128,7 @@ function refreshView() {
           <button title="View on GitHub" i-ri-github-fill />
         </a>
 
-        <button hover:color-primary i-ri:settings-line @click="showSettings" />
+        <button i-ri:settings-line hover:color-primary @click="showSettings" />
       </div>
     </div>
   </nav>
