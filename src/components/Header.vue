@@ -89,22 +89,12 @@ function refreshView() {
 <template>
   <nav>
     <div leading="[var(--nav-height)]" m-0 flex items-center font-medium>
-      <img
-        relative
-        mr-2
-        h-24px
-        v="mid"
-        top="-2px"
-        alt="logo"
-        src="../assets/logo.svg"
-      />
+      <img relative mr-2 h-24px v="mid" top="-2px" alt="logo" src="../assets/logo.svg" />
       <div flex="~ gap-1" items-center lt-sm-hidden>
         <div text-xl>Playground</div>
-        <el-tag size="small"
-          >v{{ appVersion }}, repl v{{ replVersion }}, volar v{{
-            languageToolsVersion
-          }}</el-tag
-        >
+        <el-tag size="small">v{{ appVersion }}, repl v{{ replVersion }}, volar v{{
+          languageToolsVersion
+        }}</el-tag>
       </div>
     </div>
 
@@ -113,18 +103,8 @@ function refreshView() {
         <button i-ri-refresh-line hover:color-primary @click="refreshView" />
         <button i-ri-share-line hover:color-primary @click="copyLink" />
         <button i-ri-download-line hover:color-primary @click="download" />
-        <button
-          i-ri-sun-line
-          dark:i-ri-moon-line
-          hover:color-primary
-          @click="toggleDark()"
-        />
-        <a
-          href="https://github.com/FuckDoctors/vue-playground"
-          target="_blank"
-          flex
-          hover:color-primary
-        >
+        <button i-ri-sun-line dark:i-ri-moon-line hover:color-primary @click="toggleDark()" />
+        <a href="https://github.com/FuckDoctors/vue-playground" target="_blank" flex hover:color-primary>
           <button title="View on GitHub" i-ri-github-fill />
         </a>
 
@@ -133,7 +113,7 @@ function refreshView() {
     </div>
   </nav>
 
-  <el-drawer v-model="showSettingDrawer" title="Settings" direction="rtl">
+  <el-drawer v-model="showSettingDrawer" title="Settings" direction="rtl" size="300">
     <el-form :label-width="110">
       <el-form-item label="CDN">
         <el-select v-model="cdn">
@@ -146,21 +126,13 @@ function refreshView() {
 
       <template v-for="(v, key) of versions" :key="key">
         <el-form-item :label="v.text">
-          <el-select
-            :model-value="v.active"
-            @update:model-value="setVersion(key, $event)"
-          >
+          <el-select :model-value="v.active" @update:model-value="setVersion(key, $event)">
             <el-option v-for="ver of v.published" :key="ver" :value="ver">
               {{ ver }}
             </el-option>
           </el-select>
 
-          <el-checkbox
-            v-if="key === 'elementPlus'"
-            v-model="nightly"
-            ml-1
-            @change="toggleNightly"
-          >
+          <el-checkbox v-if="key === 'elementPlus'" v-model="nightly" ml-1 @change="toggleNightly">
             nightly
           </el-checkbox>
         </el-form-item>

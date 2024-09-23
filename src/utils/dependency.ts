@@ -13,6 +13,11 @@ export interface Dependency {
 export type Cdn = 'unpkg' | 'jsdelivr' | 'jsdelivr-fastly' | 'npmmirror'
 export const cdn = useLocalStorage<Cdn>('setting-cdn', 'npmmirror')
 
+const queryCdn = new URLSearchParams(location.search).get('cdn')
+if (queryCdn) {
+  cdn.value = queryCdn as Cdn
+}
+
 export const genCdnLink = (
   pkg: string,
   version: string | undefined,
