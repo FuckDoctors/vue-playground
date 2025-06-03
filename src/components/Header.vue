@@ -12,7 +12,6 @@ import type { Store, VersionKey } from '@/composables/store'
 
 import type { Ref } from 'vue'
 
-const appVersion = import.meta.env.APP_VERSION
 const replVersion = import.meta.env.REPL_VERSION
 
 const emit = defineEmits<{
@@ -92,9 +91,7 @@ function refreshView() {
       <img relative mr-2 h-24px v="mid" top="-2px" alt="logo" src="../assets/logo.svg" />
       <div flex="~ gap-1" items-center lt-sm-hidden>
         <div text-xl>Playground</div>
-        <el-tag size="small">v{{ appVersion }}, repl v{{ replVersion }}, volar v{{
-          languageToolsVersion
-        }}</el-tag>
+        <el-tag size="small">repl v{{ replVersion }}</el-tag>
       </div>
     </div>
 
